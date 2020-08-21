@@ -193,7 +193,9 @@ class Graph:
                     # append the neighbor to it
                     # queue up NEW path
                     s.push(new_path)
+    
     dfs_r_path = []
+    dfs_r_visited = set()
 
     def dfs_recursive(self, starting_vertex, destination_vertex):
         """
@@ -203,6 +205,27 @@ class Graph:
 
         This should be done using recursion.
         """
+       
+
+        if isinstance(starting_vertex, list) is False:
+            starting_vertex = list([starting_vertex])
+
+        if starting_vertex[-1] == destination_vertex:
+            self.dfs_r_path = starting_vertex
+            
+        
+        if starting_vertex[-1] not in self.dfs_r_visited:
+            self.dfs_r_visited.add(starting_vertex[-1])
+            neighbors = self.get_neighbors(starting_vertex[-1])
+            
+            for i in neighbors:
+                
+                new_path = list(starting_vertex)
+                new_path.append(i)
+                
+                self.dfs_recursive(new_path, destination_vertex)
+
+        return self.dfs_r_path
         
 
 if __name__ == '__main__':
@@ -275,4 +298,5 @@ if __name__ == '__main__':
     '''
     print("")
     print(graph.dfs(1, 6))
-    # print(graph.dfs_recursive(1, 6))
+    print("")
+    print(graph.dfs_recursive(1, 6))
