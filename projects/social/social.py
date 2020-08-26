@@ -1,5 +1,18 @@
 import random
 
+class Queue():
+    def __init__(self):
+        self.queue = []
+    def enqueue(self, value):
+        self.queue.append(value)
+    def dequeue(self):
+        if self.size() > 0:
+            return self.queue.pop(0)
+        else:
+            return None
+    def size(self):
+        return len(self.queue)
+
 class User:
     def __init__(self, name):
         self.name = name
@@ -81,6 +94,41 @@ class SocialGraph:
         """
         visited = {}  # Note that this is a dictionary, not a set
         # !!!! IMPLEMENT ME
+        #make a queue
+        queue = Queue()
+        #add userid to q
+        queue.enqueue(user_id)
+        #while q is not empty
+        while queue.size() > 0:
+            #pop value from q
+            poped = queue.dequeue()
+            #if the poped value is not in visited
+            if poped not in visited:
+                #grab friends of poped value
+                friends = self.friendships[poped]
+                #if poped value is equal to userid
+                if poped == user_id:
+                    #visited[poped] = [userid]
+                    visited[poped] = [user_id]
+                
+                else:
+                    #if userid in friends
+                    if user_id in friends:
+                        #visited[poped]= [userid, poped]
+                        visited[poped] = [user_id, poped]
+                    else:
+                        #found bool false
+                        found = False
+                        #while found is false
+                        for i in friends:
+                            if i in visited and found is False:
+                                visited[poped] = visited[i] + [poped]
+                                found = True
+                #for each value in friends
+                for i in friends:
+                    #add value to q
+                    queue.enqueue(i)  
+                            
         return visited
 
 
@@ -90,3 +138,15 @@ if __name__ == '__main__':
     print(sg.friendships)
     connections = sg.get_all_social_paths(1)
     print(connections)
+
+    cg = SocialGraph()
+    num_users = 1000
+    ave_friends = 5
+    cg.populate_graph(num_users, ave_friends)
+    connections = cg.get_all_social_paths(1)
+    print(f"{(len(connections)/num_users) * 100}%")
+    con_leng = 0
+    
+    for i in connections:
+        con_leng += len(connections[i])
+    print(f"{con_leng/len(connections)}")
