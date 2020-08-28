@@ -146,7 +146,6 @@ if __name__ == '__main__':
     connections = cg.get_all_social_paths(1)
     print(f"{(len(connections)/num_users) * 100}%")
     con_leng = 0
-    
     for i in connections:
         con_leng += len(connections[i])
     print(f"{con_leng/len(connections)}")
