@@ -18,33 +18,19 @@ class Queue():
     def size(self):
         return len(self.queue)
 
-class Stack():
-    def __init__(self):
-        self.stack = []
-    def push(self, value):
-        self.stack.append(value)
-    def pop(self):
-        if self.size() > 0:
-            return self.stack.pop()
-        else:
-            return None
-    def size(self):
-        return len(self.stack)
-
-
-
 # Load world
 world = World()
 
 
 # You may uncomment the smaller graphs for development and testing purposes.
-map_file = "maps/test_line.txt"
+# map_file = "maps/test_line.txt"
 # map_file = "maps/test_cross.txt"
 # map_file = "maps/test_loop.txt"
 # map_file = "maps/test_loop_fork.txt"
-# map_file = "maps/main_maze.txt"
+map_file = "maps/main_maze.txt"
 
 # Loads the map into a dictionary
+
 room_graph=literal_eval(open(map_file, "r").read())
 world.load_graph(room_graph)
 
@@ -59,7 +45,8 @@ traversal_path = []
 #traversal graph
 map_graph = {}
 
-#map_graph={0:{'n':1, 's':2}, 1:{'s':0}, 2:{'n':0, 'w': '?'}}
+#test graph
+# map_graph={0:{'n':1, 's':2}, 1:{'s':'?'}, 2:{'n':0, 'w': 1}}
 
 #referance only:
 # print(player.current_room.id)
@@ -72,19 +59,25 @@ def invert_direction(direction):
     return verts[direction]
 
 #function to grab a direction to travel
-def grab_pole(room):
+def grab_move(room):
     poles = map_graph[room]
-    if poles['n'] == '?':
+    if 'n' in poles and poles['n'] == '?':
         return 'n'
-    if poles['w'] == '?':
+    if 'w' in poles and poles['w'] == '?':
         return 'w'
-    if poles['e'] == '?':
+    if 'e' in poles and poles['e'] == '?':
         return 'e'
-    if poles['s'] == '?':
+    if 's' in poles and poles['s'] == '?':
         return 's'
 
 #function to return path to closest '?'
 def find_closest_unknown(starting):
+    exists= False
+    for i in map_graph:
+        if '?' in map_graph[i].values():
+            exists = True
+    if exists == False:
+        return None    
     #create a queue
     q = Queue()
     #add starting to the q must be a list
@@ -92,7 +85,7 @@ def find_closest_unknown(starting):
     #found var = false
     found = False
     #while found is false
-    while found is False:
+    while found is False or q.size() > 0:
         #pop from the q
         poped = q.dequeue()
         #directory = map_graph[pop[-1]]
@@ -114,82 +107,132 @@ def find_closest_unknown(starting):
                 #add coppy to the q
                 q.enqueue(new_path)
     
-# print(find_closest_unknown([1]))
+
 
 #function to revert paths of room numbers to path of directions
-def num_to_pole(path):
+def num_to_direction(path):
     #new path var = []
+    new_path = []
     #loop through path
-         
-    pass
+    #for i in  length  of path -1
+    for i in range(len(path) -1):
+        #directory = map_graph[i]
+        directiory = map_graph[path[i]]
+        #for pole, num in directory
+        for x, y in directiory.items():
+            if y == path[i + 1]:
+                new_path.append(x)
+    #return new path
+    return new_path             
 
-#var for next room to travel
-#var for last room
+#function to check if a '?' exists in map_graph
+def unexplored_exists():
+    exists = False
+    for i in map_graph:
+        if '?' in map_graph[i].values():
+            exists = True
+    return exists  
+
+#function to check if '?' exists i a given room
+def unexplored_exits_room(room):
+    exists = False
+    if '?' in map_graph[room].values():
+        exists = True
+    return exists
+
+#set up inital/starting room in our map_graph
+initial_exits = player.current_room.get_exits()
+initial_room = player.current_room.id
+initial_directions = {}
+for i in initial_exits:
+    initial_directions[i] = '?'
+map_graph[initial_room] = initial_directions
+
+
+#var for preveous room
+prev_room = None
 #var to track if rooms are unexplored if true still have '?'
+unexplored = True
 
-#while length of map graph is less than 500 and unexplored is true
-    #break case:
-    #if length of map graph is greater than 0
-        # loop through map graph and all entries 
-            # if '?' dosent exist unexplores is false
-
+# begin traversal aka main loop
+while len(map_graph) < len(room_graph) and unexplored is True:
+    #set our break case unexplored = False when no '?'
+    unexplored = unexplored_exists()
     
-    #grab exits for current room
+    #grab exits to current room
+    exits = player.current_room.get_exits()
 
+    #check if room is in our map graph
+    #if its not in our graph
+    if player.current_room.id not in map_graph: 
+        #create a new entry in map graph
+        #create a new directories dict to be the entry of the room
+        directoties = {}
+        #fill directories with the rooms exits as keys and '?' as values
+        for i in exits:
+            directoties[i] = '?'
+        #set prev room to the inverse of the direction we travled in directories
+        last_move = traversal_path[-1]
+        last_move_inverse = invert_direction(last_move)
+        directoties[last_move_inverse] = prev_room
+        #add room to map_graph with directories as values
+        map_graph[player.current_room.id] = directoties
+        #update prev rooms exits to current room number
+        last_room = map_graph[prev_room]
+        last_room[last_move] = player.current_room.id
+    else:
+        if len(traversal_path) > 0:
+            last_move = traversal_path[-1]
+            last_visited_room = map_graph[prev_room]
+            if last_visited_room[last_move] == '?':
+                last_visited_room[last_move] = player.current_room.id
 
-    #check to see if room exists in our graph:
-    #the first time we visit a room we need to update map_graph:
-    #if current room not in map graph
-        #create a directions dict to be the value of the room 
-        
-        #directions = {}
-        #for each value in exits
-            #directions[i] = '?'
-        
-        #if this is not the first room we are in from the begining then update room numbers to directions as needed
-        #if length of traversal_path is not 0
-            #last move  = traversal_path[-1]
-            #find inverse of move to add last visited room number to this directions dict
-            #directions[inverse] = last room
-            
-            #update last rooms dict
-            #to update = map_graph[last_room]
-            #to update[last_move] = current room
-        
-        #add current room to map graph as key
-        #map_graph[current] = directions 
     
     #find a direction to move
-    #if length of exits is 1
-        #call function to return path to closest '?'
-        #move through the path
-        #find a '?' and set  a next room var
-    #else
-        #find a '?' and set next room var
+    #next room var
+    next_room = ''
     
-    #append traversal path with next room
-    #move to next room
+    
+    room_unexplored = unexplored_exits_room(player.current_room.id)
+    # if this is our first room just set next room
+    if len(traversal_path) == 0:
+        #find '?' room set next room var
+        next_room = grab_move(player.current_room.id)
+    #if this room only has one exit
+    # if len(exits) == 1 and len(traversal_path) == 0:
+    elif room_unexplored == False:
+        #find path to closest room with '?'
+        move_path = find_closest_unknown([player.current_room.id])
+        if move_path != None:
+            move_directions = num_to_direction(move_path)
+            #move through path updating prev room and traversal path
+            for i in move_directions:
+                traversal_path.append(i)
+                prev_room = player.current_room.id
+                player.travel(i)
+            
+            #find '?' room set next room var
+            next_room = grab_move(player.current_room.id)
+    else:
+        #find '?' room set next room var
+        next_room = grab_move(player.current_room.id)
+
+    #append traversal_path with direction
+    if next_room is not None and next_room is not '':
+        traversal_path.append(next_room)
+        #set prev room to current room
+        prev_room = player.current_room.id
+        #move to next room
+        player.travel(next_room)
+    
+    # print(next_room)
+    # print(player.current_room.id)
+    # print(traversal_path)
+    print(map_graph)
+    # print(len(map_graph))
 
 
-#what we need (brain storm):
-#traversal graph to track rooms weve been to and log exits and there room numbers as traveled
-#A bfs function that returns a path back to a room with an unsearched exit
-#function to return opposite of direction traveled might not be needed
-# main algorithm that loops us through rooms until traversal graph has all rooms and no unsearched rooms
-    #in this loop we will need to:
-    # add room to traversal graphc(dict) if doesnt alrady exist
-    # add a dict that tracks the rooms exits as keys and room numbers as values 
-        # for each room in traversal_graph if dosent exist
-    #choose a direction and move 
-    #update current room number to exit of prior room
-    #add direction traveled to traversal_path
-    # check exits of current room
-    # if no exits use function to find nearest room with a unexplored exit
-        #move to that room
-    # ..... loop not nessisarily in order above
-    #vars we might need:
-    #current room id
-    #prev room id
+
 
 
 #################################
