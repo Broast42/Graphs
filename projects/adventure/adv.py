@@ -61,14 +61,14 @@ def invert_direction(direction):
 #function to grab a direction to travel
 def grab_move(room):
     poles = map_graph[room]
-    if 'n' in poles and poles['n'] == '?':
-        return 'n'
-    if 'w' in poles and poles['w'] == '?':
-        return 'w'
-    if 'e' in poles and poles['e'] == '?':
-        return 'e'
     if 's' in poles and poles['s'] == '?':
         return 's'
+    if 'e' in poles and poles['e'] == '?':
+        return 'e'
+    if 'w' in poles and poles['w'] == '?':
+        return 'w'
+    if 'n' in poles and poles['n'] == '?':
+        return 'n'
 
 #function to return path to closest '?'
 def find_closest_unknown(starting):
@@ -85,7 +85,7 @@ def find_closest_unknown(starting):
     #found var = false
     found = False
     #while found is false
-    while found is False or q.size() > 0:
+    while found is False:
         #pop from the q
         poped = q.dequeue()
         #directory = map_graph[pop[-1]]
@@ -228,7 +228,8 @@ while len(map_graph) < len(room_graph) and unexplored is True:
     # print(next_room)
     # print(player.current_room.id)
     # print(traversal_path)
-    print(map_graph)
+    # print(map_graph)
+    
     # print(len(map_graph))
 
 
