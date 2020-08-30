@@ -61,15 +61,20 @@ def invert_direction(direction):
 #function to grab a direction to travel
 def grab_move(room):
     poles = map_graph[room]
+    
+
     if 's' in poles and poles['s'] == '?':
         return 's'
-    if 'e' in poles and poles['e'] == '?':
-        return 'e'
     if 'w' in poles and poles['w'] == '?':
         return 'w'
     if 'n' in poles and poles['n'] == '?':
         return 'n'
-
+    if 'e' in poles and poles['e'] == '?':
+        return 'e'
+    
+    
+  
+    
 #function to return path to closest '?'
 def find_closest_unknown(starting):
     exists= False
@@ -84,29 +89,34 @@ def find_closest_unknown(starting):
     q.enqueue(starting)
     #found var = false
     found = False
+    visited = set()
     #while found is false
     while found is False:
         #pop from the q
         poped = q.dequeue()
         #directory = map_graph[pop[-1]]
-        directory = map_graph[poped[-1]]
+        current = poped[-1]
+        directory = map_graph[current]
+
+        if current not in visited:
+            visited.add(current)
         #loop throug directory
-        for i in directory:
-            #if '?' exists
-            if directory[i] == '?':
-                #found = true
-                found = True
-                #return poped value
-                return poped
-            #else
-            else:
-                #copy poped value
-                new_path = list(poped)
-                #append copy with directory[i]
-                new_path.append(directory[i])
-                #add coppy to the q
-                q.enqueue(new_path)
-    
+            for i in directory:
+                #if '?' exists
+                if directory[i] == '?':
+                    #found = true
+                    found = True
+                    #return poped value
+                    return poped
+                #else
+                else:
+                    #copy poped value
+                    new_path = list(poped)
+                    #append copy with directory[i]
+                    new_path.append(directory[i])
+                    #add coppy to the q
+                    q.enqueue(new_path)
+    return None    
 
 
 #function to revert paths of room numbers to path of directions
@@ -198,8 +208,7 @@ while len(map_graph) < len(room_graph) and unexplored is True:
     if len(traversal_path) == 0:
         #find '?' room set next room var
         next_room = grab_move(player.current_room.id)
-    #if this room only has one exit
-    # if len(exits) == 1 and len(traversal_path) == 0:
+    #if this room has no unexplored exits
     elif room_unexplored == False:
         #find path to closest room with '?'
         move_path = find_closest_unknown([player.current_room.id])
@@ -224,17 +233,9 @@ while len(map_graph) < len(room_graph) and unexplored is True:
         prev_room = player.current_room.id
         #move to next room
         player.travel(next_room)
+
+    # print(map_graph.keys())
     
-    # print(next_room)
-    # print(player.current_room.id)
-    # print(traversal_path)
-    # print(map_graph)
-    
-    # print(len(map_graph))
-
-
-
-
 
 #################################
 # TRAVERSAL TEST
